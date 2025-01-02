@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Single-File Task Scheduler</title>
+    <!-- Bootstrap CSS via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Embedded CSS -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .list-group li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Daily Task Scheduler</h1>
+        <form id="task-form">
+            <div class="form-group">
+                <input type="text" class="form-control" id="task-name" placeholder="Task Name">
+            </div>
+            <div class="form-group">
+                <input type="date" class="form-control" id="due-date">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Task</button>
+        </form>
+        <hr>
+        <ul id="task-list" class="list-group mt-3"></ul>
+    </div>
+    <!-- Embedded JavaScript -->
+    <script>
+        // Select elements
+        const taskForm = document.getElementById('task-form');
+        const taskNameInput = document.getElementById('task-name');
+        const dueDateInput = document.getElementById('due-date');
+        const taskList = document.getElementById('task-list');
+
+        // Load tasks from local storage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Function to display tasks
+        function displayTasks() {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between';
+                li.innerHTML = `
+                    <div>
+                        <input type="checkbox" onchange="toggleCompleted(${index})">
+                        <span class="${task.completed ? 'completed' : ''}">${task.name}</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary mr-2" onclick="editTask(${index})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTask(${index})">Delete</button>
+                    </div>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        // Function to add a task
+        taskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = taskNameInput.value;
+            const dueDate = dueDateInput.value;
+            if (name !== '') {
+                tasks.push({ name, dueDate, completed: false });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                taskForm.reset();
+                displayTasks();
+            }
+        });
+
+        // Function to delete a task
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            displayTasks();
+        }
+
+        // Function to toggle task completion
+        function toggleCompleted(index) {
+            tasks[index].completed = !tasks[index].completed;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            displayTasks();
+        }
+
+        // Function to edit a task
+        function editTask(index) {
+            const newName = prompt('Enter new task name:', tasks[index].name);
+            if (newName !== null) {
+                tasks[index].name = newName;
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                displayTasks();
+            }
+        }
+
+        // Initialize the app
+        displayTasks();
+    </script>
+</body>
+</html>
